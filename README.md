@@ -1,1 +1,20 @@
-# Modul-8-gRPC
+## Reflection
+1. Perbedaan utama antara unary, server streaming, dan bi-directional streaming ada di pola komunikasinya. Unary itu paling sederhana karena hanya client mengirim satu request dan server membalas satu response, cocok untuk proses transaksi seperti pembayaran. Server streaming itu ketika client hanya perlu mengirim satu request, tetapi hasil dari server bisa banyak, cocok untuk misalnya mengambil riwayat transaksi. Terakhir bi-directional itu ketika client dan server bisa saling mengirim pesan secara terus-menerus, dimana ini cocok untuk komunikasi real-time misalnya chat.
+
+2. Dalam membuat gRPC service di Rust, authentication dibutuhkan supaya server tahu siapa client yang sedang mengakses service. Authorization juga dibutuhkan supaya client hanya bisa mengakses data atau fitur yang merupakan haknya. Selain itu, data yang dikirim sebaiknya dienkripsi dengan TLS, terutama jika berisi informasi sensitif seperti transaksi atau pembayaran.
+
+3. Tantangan utama pada bidirectional streaming adalah client dan server harus bisa berkomunikasi dua arah secara bersamaan. Misalnya dalam chat, client bisa mengirim pesan sambil menerima balasan dari server, jadi proses async harus ditangani dengan benar. Selain itu, server juga harus siap kalau client tiba-tiba disconnect, terlalu lambat menerima pesan, atau membuat buffer penuh. Kalau hal ini tidak ditangani, aplikasi bisa menjadi tidak stabil.
+
+4. ReceiverStream membantu karena data dari channel Tokio bisa langsung dijadikan stream response untuk gRPC. Ini membuat kode lebih rapi karena proses membuat data dan mengirim response bisa dipisahkan. Kekurangannya adalah kode menjadi sedikit lebih kompleks karena perlu memperhatikan ukuran buffer, error handling, dan kondisi ketika sender atau receiver sudah tertutup.
+
+5. Agar kode Rust gRPC lebih mudah di-maintain dan di-extend, kode sebaiknya dipisah berdasarkan tugasnya. File proto hasil generate, implementasi service, business logic, dan konfigurasi server sebaiknya tidak dicampur dalam satu file besar. Dengan begitu kode jadi lebih mudah dibaca, dites, dan lebih mudah di-extend jika nanti ada membuat service baru.
+
+6. Hal yang perlu ditambahkan untuk MyPaymentService adalah validasi input seperti jumlah pembayaran, user, dan metode pembayaran. Service juga perlu menyimpan transaksi ke database, menangani status pembayaran seperti pending, success, atau failed, dan terhubung dengan payment gateway. Idempotency juga penting supaya request yang terkirim dua kali tidak membuat pembayaran terjadi dua kali.
+
+7. Penggunaan gRPC membuat komunikasi antar service dalam distributed system jadi lebih jelas. Hal ini karena request dan response sudah didefinisikan melalui Protocol Buffers. File .proto menjadi kontrak antara client dan server, sehingga struktur datanya lebih konsisten. gRPC cocok untuk komunikasi internal antar backend karena performanya bagus, tetapi untuk public API atau frontend masih lebih mudah menggunakan REST dan JSON.
+
+8. HTTP/2 memberi keunggulan untuk gRPC karena mendukung multiplexing, streaming, dan header compression. Dengan begitu, komunikasi bisa lebih efisien dibanding HTTP/1.1 biasa. Jika dibandingkan dengan WebSocket, gRPC lebih terstruktur karena sudah punya definisi service dan generated code. Kekurangannya adalah gRPC lebih sulit dites manual karena menggunakan Protobuf binary, bukan JSON yang bisa langsung dibaca.
+
+9. REST biasanya memakai pola request-response, yaitu client mengirim request lalu server mengirim response. Pola ini cocok untuk operasi biasa seperti CRUD, tetapi kurang cocok untuk real-time karena client harus terus meminta update baru. gRPC dengan bidirectional streaming lebih responsif karena client dan server bisa saling mengirim data dalam satu koneksi yang tetap terbuka.
+
+10. gRPC memakai Protocol Buffers yang berbasis schema, jadi struktur data lebih jelas dan konsisten. Ini membantu mengurangi kesalahan karena client dan server mengikuti kontrak yang sama. Protobuf juga lebih efisien karena memakai format binary. Sebaliknya, JSON pada REST lebih fleksibel dan mudah dibaca manusia, tetapi bisa menjadi kurang konsisten kalau tidak divalidasi dengan baik. Jadi, gRPC lebih cocok untuk sistem yang butuh performa dan kontrak ketat, sedangkan REST lebih praktis untuk penggunaan umum.
