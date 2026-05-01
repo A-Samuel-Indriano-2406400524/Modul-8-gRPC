@@ -1,0 +1,24 @@
+[package]
+name = "grpc-tutorial"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+prost = "0.14.3"
+tokio = { version = "1.52.1", features = ["full"] }
+tokio-stream = "0.1.18"
+tonic = "0.14.5"
+tonic-prost = "0.14.2"
+
+[build-dependencies]
+protoc-bin-vendored = "3.2.0"
+tonic-build = "0.14.5"
+tonic-prost-build = "0.14.2"
+
+[[bin]]
+name = "grpc-server"
+path = "src/grpc_server.rs"
+
+[[bin]]
+name = "grpc-client"
+path = "src/grpc_client.rs"
